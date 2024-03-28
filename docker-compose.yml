@@ -1,0 +1,44 @@
+services:
+  db:
+    container_name: scraper-db
+    image: chromadb/chroma:0.4.24
+    volumes:
+      - ./chromadb:/chroma/chroma
+    environment:
+      IS_PERSISTENT: True
+      ANONYMIZED_TELEMETRY: False
+      PERSIST_DIRECTORY: ./chroma/chroma
+      CHROMA_SERVER_AUTH_CREDENTIALS: ${CHROMA_SERVER_AUTH_CREDENTIALS:-test-token}
+      CHROMA_SERVER_AUTH_CREDENTIALS_PROVIDER: ${CHROMA_SERVER_AUTH_CREDENTIALS_PROVIDER:-chromadb.auth.token.TokenConfigServerAuthCredentialsProvider}
+      CHROMA_SERVER_AUTH_PROVIDER: ${CHROMA_SERVER_AUTH_PROVIDER:-chromadb.auth.token.TokenAuthServerProvider}
+      CHROMA_SERVER_AUTH_TOKEN_TRANSPORT_HEADER: ${CHROMA_SERVER_AUTH_TOKEN_TRANSPORT_HEADER:-X_CHROMA_TOKEN}
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: [ "CMD", "curl" ,"--fail", "-s", "http://localhost:8000/api/v1/heartbeat", "||", "exit 1" ]
+      timeout: 10s
+      retries: 10
+
+  scraper:
+    container_name: scraper
+    build:
+      context: ./
+    #        target: local
+    volumes:
+      - ./:/usr/src/app
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      DEPLOY_STAGE: ${DEPLOY_STAGE:-local}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-us-east-1}
+      AWS_BEDROCK_REGION: ${AWS_BEDROCK_REGION:-us-east-1}
+      AWS_EMBEDDING_MODEL: ${AWS_EMBEDDING_MODEL:-amazon.titan-embed-text-v1}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-access-key}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-secret-access-key}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN:-session-token}
+      CHROMA_AUTH_CREDENTIALS: ${CHROMA_AUTH_CREDENTIALS:-test-token}
+      CHROMADB_HOST: ${CHROMADB_HOST:-db}
+      CHROMADB_PORT: ${CHROMADB_PORT:-8000}
+      CHROMADB_COLLECTION_NAME: ${CHROMADB_COLLECTION_NAME:-cheesecake-blog-aws}
+    depends_on:
+      db:
+        condition: service_healthy

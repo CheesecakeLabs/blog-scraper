@@ -1,13 +1,12 @@
 import chromadb
 
-from embedding import EmbeddingModel
+from embeddings.embedding_functions import AWSEmbeddingFunction
 
 # Initialize the chromadb directory, and client.
 print("Initializing ChromaDB...")
 client = chromadb.PersistentClient(path="./chromadb")
 collection = client.get_collection(
-    name=f"cheesecake-blog",
-    # embedding_function=ProjectEmbeddingFunction
+    name="cheesecake-blog-aws", embedding_function=AWSEmbeddingFunction()
 )
 print("ChromaDB initialized.\n")
 
@@ -29,11 +28,12 @@ print("ChromaDB initialized.\n")
 #### Query 2 ####
 
 print("Initializing embedding model")
-embedding_model = EmbeddingModel()
+embedding_model = AWSEmbeddingFunction()
 print("Embedding model initialized. \n")
 
 # query_texts = ["What is the meaning of life?"]
-query_texts = ["How to get started with vector databases?"]
+# query_texts = ["How to get started with vector databases?"]
+query_texts = ["What is an interface builder?"]
 
 embeddings = embedding_model.get_embedding(query_texts)
 

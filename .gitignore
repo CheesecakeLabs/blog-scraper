@@ -291,3 +291,6 @@ pyrightconfig.json
 # Transformers and database cache
 transformers-cache
 chromadb
+
+# Environment Variables
+config/.env.development

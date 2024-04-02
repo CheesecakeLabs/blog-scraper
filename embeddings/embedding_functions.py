@@ -34,13 +34,19 @@ class AWSEmbeddingFunction(EmbeddingFunction):
         AWS_SESSION_TOKEN = os.getenv("AWS_SESSION_TOKEN")
         AWS_BEDROCK_REGION = os.getenv("AWS_BEDROCK_REGION")
 
-        self.bedrock_runtime = boto3.client(
-            service_name="bedrock-runtime",
-            region_name=AWS_BEDROCK_REGION,
-            aws_access_key_id=AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-            aws_session_token=AWS_SESSION_TOKEN,
-        )
+        if (AWS_ACCESS_KEY_ID is not None and
+                AWS_SECRET_ACCESS_KEY is not None and
+                AWS_SESSION_TOKEN is not None
+        ):
+            self.bedrock_runtime = boto3.client(
+                service_name="bedrock-runtime",
+                region_name=AWS_BEDROCK_REGION,
+                aws_access_key_id=AWS_ACCESS_KEY_ID,
+                aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+                aws_session_token=AWS_SESSION_TOKEN,
+            )
+        else:
+            self.bedrock_runtime = boto3.client(service_name="bedrock-runtime", region_name=AWS_BEDROCK_REGION)
 
     def __call__(self, input: Documents) -> Embeddings:
         embeddings = self.get_embedding(input)
